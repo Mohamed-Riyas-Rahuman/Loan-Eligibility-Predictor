@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Eligibility Predictor</title>
+    <style>
+        /* ===== Page Styling ===== */
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            min-height: 100vh; /* Make background cover full height */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* ===== Form Container ===== */
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 450px; /* Fixed width */
+        }
+
+        /* ===== Title Styling ===== */
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* ===== Input Labels ===== */
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+        }
+
+        /* ===== Input Fields & Dropdowns ===== */
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        /* ===== Highlight Active Field ===== */
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 8px rgba(79, 172, 254, 0.3);
+        }
+
+        /* ===== Predict Button ===== */
+        button {
+            margin-top: 15px;
+            width: 100%;
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+            color: white;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        /* ===== Button Hover Effect ===== */
+        button:hover {
+            background: linear-gradient(90deg, #00f2fe, #4facfe);
+        }
+
+        /* ===== Prediction Result Styling ===== */
+        .result {
+            margin-top: 20px;
+            padding: 12px;
+            background: #eaf4ea;
+            border-radius: 8px;
+            color: green;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Page Title -->
+        <h1>Loan Eligibility Predictor</h1>
+
+        <!-- Form to send data to Flask backend -->
+        <form action="/predict" method="post">
+
+            <!-- Each input corresponds to one ML model feature -->
+            <label>Age:</label>
+            <input type="number" name="feature1" placeholder="e.g., 32" value="{{ user_input.feature1 if user_input else '' }}">
+
+            <label>Income:</label>
+            <input type="number" name="feature2" placeholder="e.g., 55000" value="{{ user_input.feature2 if user_input else '' }}">
+
+            <label>Loan Amount:</label>
+            <input type="number" name="feature3" placeholder="e.g., 200000" value="{{ user_input.feature3 if user_input else '' }}">
+
+            <label>Months Employed:</label>
+            <input type="number" name="feature4" placeholder="e.g., 36" value="{{ user_input.feature4 if user_input else '' }}">
+
+            <label>Number of Credit Lines:</label>
+            <input type="number" name="feature5" placeholder="e.g., 4" value="{{ user_input.feature5 if user_input else '' }}">
+
+            <label>Interest Rate:</label>
+            <input type="number" step="0.01" name="feature6" placeholder="e.g., 9.5" value="{{ user_input.feature6 if user_input else '' }}">
+
+            <label>Loan Term (Months):</label>
+            <input type="number" name="feature7" placeholder="e.g., 60" value="{{ user_input.feature7 if user_input else '' }}">
+
+            <label>DTI Ratio:</label>
+            <input type="number" step="0.01" name="feature8" placeholder="e.g., 0.28" value="{{ user_input.feature8 if user_input else '' }}">
+
+            <label>Education:</label>
+            <select name="feature9">
+                <!-- Default option -->
+                <option value="" disabled {% if not user_input or not user_input.feature9 %}selected{% endif %}>Select education</option>
+                <option value="graduate" {% if user_input and user_input.feature9 == 'graduate' %}selected{% endif %}>Graduate</option>
+                <option value="undergraduate" {% if user_input and user_input.feature9 == 'undergraduate' %}selected{% endif %}>Undergraduate</option>
+                <option value="highschool" {% if user_input and user_input.feature9 == 'highschool' %}selected{% endif %}>High School</option>
+            </select>
+            <label>Employment Type:</label>
+            <select name="feature10">
+                <option value="" disabled {% if not user_input or not user_input.feature10 %}selected{% endif %}>Select employment type</option>
+                <option value="salaried" {% if user_input and user_input.feature10 == 'salaried' %}selected{% endif %}>Salaried</option>
+                <option value="self-employed" {% if user_input and user_input.feature10 == 'self-employed' %}selected{% endif %}>Self-Employed</option>
+            </select>
+            <label>Marital Status:</label>
+            <select name="feature11">
+                <option value="" disabled {% if not user_input or not user_input.feature11 %}selected{% endif %}>Select marital status</option>
+                <option value="married" {% if user_input and user_input.feature11 == 'married' %}selected{% endif %}>Married</option>
+                <option value="single" {% if user_input and user_input.feature11 == 'single' %}selected{% endif %}>Single</option>
+            </select>
+            <label>Has Mortgage (0 or 1):</label>
+            <input type="number" min="0" max="1" name="feature12" placeholder="e.g., 1" value="{{ user_input.feature12 if user_input else '' }}">
+
+            <label>Has Dependents (0 or 1):</label>
+            <input type="number" min="0" max="1" name="feature13" placeholder="e.g., 1" value="{{ user_input.feature13 if user_input else '' }}">
+
+            <label>Loan Purpose:</label>
+            <select name="feature14">
+                <option value="" disabled {% if not user_input or not user_input.feature14 %}selected{% endif %}>Select purpose</option>
+                <option value="home" {% if user_input and user_input.feature14 == 'home' %}selected{% endif %}>Home</option>
+                <option value="car" {% if user_input and user_input.feature14 == 'car' %}selected{% endif %}>Car</option>
+                <option value="education" {% if user_input and user_input.feature14 == 'education' %}selected{% endif %}>Education</option>
+            </select>
+            <label>Has CoSigner (0 or 1):</label>
+            <input type="number" min="0" max="1" name="feature15" placeholder="e.g., 0" value="{{ user_input.feature15 if user_input else '' }}">
+
+            <!-- Submit button -->
+            <button type="submit">Predict</button>
+        </form>
+
+        <!-- Display results only if prediction_text is available -->
+        {% if prediction_text %}
+            <div class="result">{{ prediction_text }}</div>
+            <div class="result">{{ eligibility_text }}</div>
+        {% endif %}
+    </div>
+
+</body>
+</html>
